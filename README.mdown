@@ -1,0 +1,42 @@
+# README.md
+
+## Feature Summary
+
+
+### Aircraft.java
+Contains operating parameters as well as airline configurations specific to the airline type. It stores `constants` and static aircraft state such as ZFW, MTOW, fuel capacity, payload, aircraft type & configuration, etc. 
+
+#### Performance.java
+Contains performance data specific to an aircraft. 
+When calling specific functions, it returns operating data such as,
+- T/O Speed with Flaps
+- Vref
+
+
+### Navigation.java
+Retreives and parses data from AIRAC files; 
+Stores,
+- Airport SID/STAR & Runway Informations
+- Enroute NAVAIDs
+Calculates,
+- Distance between two points
+- Static TOC
+- Dynamic TOD with STAR constraints
+- Sector Block Time
+- ETA
+
+
+### FmcInterface.java
+Generates a representation of a FMC and enables interaction that manipulates the state of the aicraft in real time
+
+
+### Simualator.java
+Stores dynamic states of the aircraft. Contains:
+- A Latitude & Longitude
+- Speed
+- Wind
+- Time
+
+
+### Dispatch.java
+Act as a flight planning software to find route and generates a load-sheet
