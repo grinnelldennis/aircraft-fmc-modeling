@@ -2,9 +2,20 @@
 
 ## Feature Summary
 
+1. Navigation and Aircraft Modeling
+2. Interaction between Aircraft & Performacne
+3. Interactive FMC
+4. Simulation
+5. Migration of fmc interface onto javascript 
+
 
 ### Aircraft.java
-Contains operating parameters as well as airline configurations specific to the airline type. It stores `constants` and static aircraft state such as ZFW, MTOW, fuel capacity, payload, aircraft type & configuration, etc. 
+Contains operating parameters as well as airline configurations specific to the airline type. It stores `constants` and static aircraft state such,
+- ZFW
+- MTOW
+- Fuel Capacity
+- Aircraft Type
+- Airline Configuration
 
 #### Performance.java
 Contains performance data specific to an aircraft. 
@@ -31,11 +42,14 @@ Generates a representation of a FMC and enables interaction that manipulates the
 
 
 ### Simualator.java
-Stores dynamic states of the aircraft. Contains:
-- A Latitude & Longitude
+Stores dynamic states & parameters of the aircraft. Contains:
+- Latitude & Longitude
 - Speed
 - Wind
 - Time
+- Weight
+- Fuel
+
 
 
 ### Dispatch.java
