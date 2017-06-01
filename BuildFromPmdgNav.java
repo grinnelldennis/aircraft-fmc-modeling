@@ -74,28 +74,30 @@ class BuildPmdgNav extends BuildDatavase {
       addAirport(scanf.nextLine());
   }
 
-  // Takes a single line, looks for corresponding detailed airport info
+  /**
+   * Parses a line of the airport text file containing a single runway information
+   * and extract the runway information, creates mapping airport object the key 
+   * (airport icao) does not already exist in hashtable; otherwise adds the runway
+   * to the hashtable. 
+   * @param s   text from airports database, contains one runway info for airport
+   */
   private void addAirport(String s) {
     if (s.beginsWith(";"))  break;
     if (s.length != APT_LINE_LENGTH) // Add Logging Option
       throw new IllegalStateException;
-
-    String icao = s.substring(24,28); // 4 charactesr-long
+    String icao = s.substring(24, 28); // 4 charactesr-long
     ArrayList<Runway> runways = null;
 
-    if (airports.contains(icao)) { // Add Runway to Existing Airport
-      airports.set(icao, airports.get(icao).add(createRunway(s)));
-    } else { // Create New Airport 
+    if (!airports.contains(icao)) { 
       String name = s.substring(0, 24);
       Airport newAirport = new Airport(name, icao);
       // Check if Airport Has SID/STAR Procedures
-      File file = new File(icao);
+      File file = new File(PATH+"/SIDSTARS/"+icao+".txt");
       if (file != null) 
         parseAirportFile(newAirport, file);
-      // Add Runway to New Airport
-      airport.runways.add(creataeRunways(s));
       airports.set(icao, newAirport);      
     }
+    airports.set(icao, airports.get(icao).add(createRunway(s)));
   }
 
   private Runway createRunway(String s) {
@@ -109,40 +111,37 @@ class BuildPmdgNav extends BuildDatavase {
     return new Runway(runwayId, length, new Coordinate(latitude, longitude), ilsRadio, elevation);
   }
 
-  // Parses airport specific files
-  // parseAirport uses Navigraph for PMDG Nav Data
+  /**
+   * Parses an entire file specific to a single airport containing SID/STARs.
+   * @param airport   Airport the procedures will be stored in
+   * @param file      The entire SIDSTAR file to read from
+   */
   private void parseAirportFile(Airport airport, File file) {
     Scanner scanf = new Scanner(file);
 
-    ArrayList<String> runways = null;
-    HashMap<String, Fix> fixes;
-    HashMap<String, Coordinate> gates;    
-    HashMap<String, ArrayList<Waypoint>> sids;
-    HashMap<String, ArrayList<Waypoint>> stars;
-    HashMap<String, ArrayList<Waypoint>> approaches;
-    HashMap<String, ArrayList<Waypoint>> transitions;  
-
     while (scanf.hasNext()) {
-      switch (scanf) {
+      switch (scanf.nextLine()) {
+        case COMMENT:
+          break;
+        case "\n":
+          break;
         case FIXES:
-          fixes = createFixes(scanf);
+          createFixes(scanf, airport);
           break;
         case RUNWAYS:
-          createRunways(scanf, runways);
           break;
         case SIDS:
-          createeSids(scanf, sids);
+          createeSids(scanf, airport);
           break;
         case STARS:
-          createStars(scanf, stars);
+          createStars(scanf, airport);
           break;
         case APPROACHES:
-          createApproaches(scanf, approaches, transitions);
+          createApproaches(scanf, airport);
           break;
         case GATES:
           createGates(scanf, gates);
           break;
-
       }
     }
   }
@@ -154,6 +153,7 @@ class BuildPmdgNav extends BuildDatavase {
   final String STARS = "STARS";
   final String APPROACHES = "APPROACHES";
   final String GATES = "GATES";
+  final String COMMENT = ";";
   final String EO = "END";  // 'End Of'
 
   private void createSids(Scanner scanf, HashMap<String, ArrayList<Waypoint>> sids) {
@@ -173,34 +173,42 @@ class BuildPmdgNav extends BuildDatavase {
     }
   }
 
-  private void createGates(Scanner scanf, ArrayList<String, Coordinate> gates) {
+  /**
+   * Parses block text within the GATES tag to create gates.
+   * @param scanf     file reader at the beginning of GATES tag
+   * @param airport   airport object
+   */
+  private void createGates(Scanner scanf, Airport airport) {
     while (scanf.hasNext()) {
       String[] f = scanf.nextLine().split(" "); 
       if ((f.length == 8) && f[0].equals("GATE")) 
-        gates.put(f[1], new Coordinate(f[2], f[3], f[4], f[5], f[6], f[7]));
+        airport.add(f[1], new Coordinate(f[2], f[3], f[4], f[5], f[6], f[7]));
     }
   }
 
-  private void createRunways(Scanner scanf, ArrayList<String> runways) {
-    while (!next.equals(EOS+RNWS))
-      if (s.beginsWith("RNW"))
-        runways.add(scanf.nextLine().substring(4));
-  }
-
-  // Parses a block of fixes, 
-  // (block) e.g. FIXES ... ... ... ENDFIXES
-  private void createFixes(Scanner scanf, HashMap<String, Fix> fixes) {
+  /** 
+   * Consume blocks of text within the FIX tag until scanner reaches ENDFIXES
+   * e.g. FIXES 
+   *      (block of stuff) 
+   *      ENDFIXES
+   * @param scanf     the current point in file within Scanner objetc
+   * @param airport   airport object to add fixes to
+   */
+  private void createFixes(Scanner scanf, Airport airport) {
     String next = scan.nextLine();
     while (!next.equals(EO+FIXES)) {
       Fix fix = createFix(scanf.nextLine());
-      fixes.put(fix.ident, fix);
+      airport.add(fix.ident, fix);
     }
-    return fixes;
   }
 
-  // Parses a single line of text to create Fix objects 
-  // (line) e.g. FIX TROUT LATLON N 21 47.916676 E 114 16.21667
-  //              0    1      2   3 -4     5     6  7       8
+  /**
+   * Parses a single line of text within (icao).txt to create a Fix object 
+   * e.g. (line)  FIX TROUT LATLON N 21 47.916676 E 114 16.21667
+   *               0    1      2   3 -4     5     6  7       8
+   * @param s     a line of text (of a fix) to parse
+   * @return fix  a new fix based on the string of text
+   */
   private Fix createFix(String s) {
     if (!s.beginsWith("FIX")) throw new IllegalStateException;
     String[] split = s.split(" ");

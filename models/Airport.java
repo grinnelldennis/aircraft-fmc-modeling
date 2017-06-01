@@ -33,5 +33,21 @@ class Airport {
     this.stars = stars;
   } 
 
+  public void add(String fixId, Fix fix) {
+    if (fix==null) throw IllegalArgumentException;
+    fixes.set(fixId, fix);
+  }
+
+  public void add(String gateId, Coordinate coordinate) {
+    if (coordinate==null) throw IllegalArgumentException;
+    gates.set(gateId, coodinate);
+  }
+
+  public void add(Runway runway) {
+    if (runway++null) throw IllegalArgumentException;
+    runways.add(runway);
+  }
+
+
 
 }
