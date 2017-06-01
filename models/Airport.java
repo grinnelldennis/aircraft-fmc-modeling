@@ -20,19 +20,6 @@ class Airport {
     stars = new HashMap<>();
   }
 
-  public void setFixes(HashMap<String, Fix> fixes) {
-    this.fixes = fixes;
-  }
-  public void setGates(HashMap<String, Coordinate> gates) {
-    this.gates = gates;
-  }
-  public void setSids(HashMap<String, ArrayList<Waypoint>> sids) {
-    this.sids = sids;
-  }
-  public void setStars(HashMap<String, ArrayList<Waypoint>> stars) {
-    this.stars = stars;
-  } 
-
   public void add(String fixId, Fix fix) {
     if (fix==null) throw IllegalArgumentException;
     fixes.set(fixId, fix);
