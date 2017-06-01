@@ -2,8 +2,7 @@ class Airport {
   
   String icao;
   String name;
-  Coordinate coord;
-  int elevation;
+  ArrayList<Runway> runways;
   // (Ident Name, Fix)
   HashMap<String, Fix> fixes;
   // (Gate Number, Coordinate)
@@ -12,8 +11,13 @@ class Airport {
   HashMap<String, ArrayList<Waypoint>> sids;
   HashMap<String, ArrayList<Waypoint>> stars;  
 
-  public Airport(String name, String icao, double l1, double l2) {
-    parseLine(s);
+  public Airport(String name, String icao) {
+    this.name = name;
+    this.icao = icao;
+    runways = new ArrayList<>();
+    gates = new HashMap<>();
+    sids = new HashMap<>();
+    stars = new HashMap<>();
   }
 
   public void setFixes(HashMap<String, Fix> fixes) {
