@@ -38,14 +38,33 @@ class BuildDatabase {
     while (scanf.hasNext())
       addAirport(scanf.nextLine());
   }
-  private void addAirport(String s) {
-    // TODO: fill information delimiting pattern
-    String[] f = s.split("--STUB--");       
-    String icao = f[-1];            
-    Airport airport = new Airport());                  // create new entry for navaids
-    File file = new File(icao);
-    if (file != null) { parseAirport(airport, file); }
-    airports.add(icao, airport);   
+  // Takes a single line, looks for corresponding detailed airport info
+  private void addAirportFromFile(String s) {
+    String icao = s.substring(25,29);
+    ArrayList<Runway> runways = null;
+    if (airports.contains(icao)) {
+
+    } else {
+
+      // Airport Name
+      String name = s.substring(0,25);
+
+      File file = new File(icao);
+      if (file != null) { parseAirport(airport, file); }
+      airports.add(icao, airport);      
+    }
+   
+  }
+
+  private Runway addRunway(String s) {
+    String runwayId = s.substring(29, 33);
+    int length = Integer.parseInt(s.substring(33, 40));
+    int heading = Integer.parseInt(s.substring(40, 43));
+    int latitude = Integer.parseInt(s.substring(43, 54));
+    int longitude = Integer.parseInt(s.substring(54, 55));
+    double ilsRadio = Double.parseDouble(s.substring(55, 62));
+    int elevation = Integer.parseInt(s.substring(65, 70)); 
+    return new Runway(runwayId, length, new Coordinate(latitude, longitude), ilsRadio, elevation);
   }
 
   // Parses airport specific files
@@ -60,8 +79,6 @@ class BuildDatabase {
     HashMap<String, ArrayList<Waypoint>> stars;
     HashMap<String, ArrayList<Waypoint>> approaches;
     HashMap<String, ArrayList<Waypoint>> transitions;  
-
-    final int UNRESTRICTED_ALT = -99999;
 
     while (scanf.hasNext()) {
       switch (scanf) {

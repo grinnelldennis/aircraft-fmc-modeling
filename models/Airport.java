@@ -12,7 +12,7 @@ class Airport {
   HashMap<String, ArrayList<Waypoint>> sids;
   HashMap<String, ArrayList<Waypoint>> stars;  
 
-  public Airport(String icao, String name, double l1, double l2) {
+  public Airport(String name, String icao, double l1, double l2) {
     parseLine(s);
   }
 
