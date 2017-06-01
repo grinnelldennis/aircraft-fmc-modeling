@@ -1,31 +1,39 @@
+/* Import Statements Goes Here */
 
 class BuildPmdgNav extends BuildDatavase {
-  final String path = "../aircraft-data/NavPmdg";
+  final String PATH = "../aircraft-data/NavPmdg";
+  final int NAV_LINE_LENGTH = 61;
+  final int APT_LINE_LENGTH = 74;
   // Data Storage
   HashMap<String, Airport> airports;
   HashMap<String, ArrayList<Navaid>> navaids;
 
-  public BuildDatabase() {
+  public BuildPmdgNav() {
     airports = new HashMap<>();
     navaids = new HashMap<>();
-    buildDatabase();
+    buildNavDatabase();
   }
-  public void buildDatabase() {
-    // TODO: fill path
-    loadNavaids(new File(path+"/NAVDATA/wpNavAID.txt")); 
-    readAirportsFromFile(new File(path+"/NAVDATA/wpNavAPT.txt"));
+  public void buildNavDatabase() {
+    loadNavaids(new File(PATH+"/NAVDATA/wpNavAID.txt")); 
+    loadAirports(new File(PATH+"/NAVDATA/wpNavAPT.txt"));
   }
 
-
-  // Initialize Navaids from file
+  /**
+   * Driver that iterates the entire wpNavAID file, calls addLineToNavaids with
+   * individual lines within the text file
+   * @param f     file containing all navaids
+   * @see addLineToNavaids
+  */
   private void loadNavaids(File f) {
     Scanner scanf = new Scanner(f);
     while (scanf.hasNext())
-      addLineToNavaid(scanf.nextLine());
+      addLineToNavaids(scanf.nextLine());
   }
-  private void addLineToNavaid(String s) {
+
+  private void addLineToNavaids(String s) {
     if (s.beginsWith(";")) break;
-    if (s.length!=61) throw new IllegalStateException;
+    if (s.length!=61) 
+      throw new IllegalStateException;
 
     String brief = s.substring(0, 24); // 24 characters-long
     String ident = s.substring(24, 29); // 5 characters-long
@@ -42,41 +50,55 @@ class BuildPmdgNav extends BuildDatavase {
   }
 
   /**
-   * String.substring substitute that takes the number of characters to substring
-   * after the starting index. 
+   * String.substring substitute that takes the number of characters to 
+   * substring after the starting index. 
    * @param s           String to substring from
    * @param index       substring's starting index
-   * @param characters  the number of characters after index to substring 
+   * @param characters  the number of characters after index to substring
+   * @return  the requested String 
   */  
   private String extractSubstring(String s, int index, int characters) {
+    if (s.length > index+characters) throw new ArrayIndexOutOfBoundException;
     return s.substring(index, index+characters+1);
   }
 
-  // Initialize Airports from file
+  /**
+   * Driver that iterates the entire wpNavAPT file, calls addLineToAriports with
+   * individual lines within the text file
+   * @param f     file containing all airports
+   * @see addLineTiAirport
+  */
   private void loadAirports(File f) {
     Scanner scanf = new Scanner(f);
     while (scanf.hasNext())
       addAirport(scanf.nextLine());
   }
+
   // Takes a single line, looks for corresponding detailed airport info
-  private void addAirportFromFile(String s) {
-    String icao = s.substring(25,29);
+  private void addAirport(String s) {
+    if (s.beginsWith(";"))  break;
+    if (s.length != APT_LINE_LENGTH) // Add Logging Option
+      throw new IllegalStateException;
+
+    String icao = s.substring(24,28); // 4 charactesr-long
     ArrayList<Runway> runways = null;
-    if (airports.contains(icao)) {
 
-    } else {
-
-      // Airport Name
-      String name = s.substring(0,25);
-
+    if (airports.contains(icao)) { // Add Runway to Existing Airport
+      airports.set(icao, airports.get(icao).add(createRunway(s)));
+    } else { // Create New Airport 
+      String name = s.substring(0, 24);
+      Airport newAirport = new Airport(name, icao);
+      // Check if Airport Has SID/STAR Procedures
       File file = new File(icao);
-      if (file != null) { parseAirport(airport, file); }
-      airports.add(icao, airport);      
+      if (file != null) 
+        parseAirportFile(newAirport, file);
+      // Add Runway to New Airport
+      airport.runways.add(creataeRunways(s));
+      airports.set(icao, newAirport);      
     }
-   
   }
 
-  private Runway addRunway(String s) {
+  private Runway createRunway(String s) {
     String runwayId = s.substring(29, 33);
     int length = Integer.parseInt(s.substring(33, 40));
     int heading = Integer.parseInt(s.substring(40, 43));
@@ -89,7 +111,7 @@ class BuildPmdgNav extends BuildDatavase {
 
   // Parses airport specific files
   // parseAirport uses Navigraph for PMDG Nav Data
-  private void parseAirport(Airport airport, File file) {
+  private void parseAirportFile(Airport airport, File file) {
     Scanner scanf = new Scanner(file);
 
     ArrayList<String> runways = null;
