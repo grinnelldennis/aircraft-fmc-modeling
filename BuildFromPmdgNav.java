@@ -33,7 +33,7 @@ class BuildPmdgNav extends BuildDatavase {
   private void addLineToNavaids(String s) {
     if (s.beginsWith(";")) break;
     if (s.length!=61) 
-      throw new IllegalStateException;
+      throw new IllegalStateException("Invalid Navaid Entry");
 
     String brief = s.substring(0, 24); // 24 characters-long
     String ident = s.substring(24, 29); // 5 characters-long
@@ -58,7 +58,7 @@ class BuildPmdgNav extends BuildDatavase {
    * @return  the requested String 
   */  
   private String extractSubstring(String s, int index, int characters) {
-    if (s.length > index+characters) throw new ArrayIndexOutOfBoundException;
+    if (s.length > index+characters) throw new ArrayIndexOutOfBoundException("Index Out of Bound");
     return s.substring(index, index+characters+1);
   }
 
@@ -84,7 +84,7 @@ class BuildPmdgNav extends BuildDatavase {
   private void addAirport(String s) {
     if (s.beginsWith(";"))  break;
     if (s.length != APT_LINE_LENGTH) // Add Logging Option
-      throw new IllegalStateException;
+      throw new IllegalStateException("Invalid Airport Entry");
     String icao = s.substring(24, 28); // 4 charactesr-long
     ArrayList<Runway> runways = null;
 
@@ -146,7 +146,7 @@ class BuildPmdgNav extends BuildDatavase {
     }
   }
 
-  // Navigraph for PMDG Specific Keywords
+  // PMDG-Navigraph Constants
   final String FIXES = "FIXES";
   final String RUNWAYS = "RNWS";
   final String SIDS = "SIDS";
@@ -155,23 +155,6 @@ class BuildPmdgNav extends BuildDatavase {
   final String GATES = "GATES";
   final String COMMENT = ";";
   final String EO = "END";  // 'End Of'
-
-  private void createSids(Scanner scanf, HashMap<String, ArrayList<Waypoint>> sids) {
-    while (!next.equals(EO+SIDS)) {
-      ArrayList<Waypoint> sid = createSid(scan.nextLine().split(" "));
-      sids.put(sid.ident, sid);
-    }
-  }
-
-  private ArrayList<Waypoint> createSid(String[] f]) {
-    if (f.length > 3)
-    for (int x = 4; x < f.length; x++) {
-      // X on for loop stays as "FIX"
-      if (f[x++].equals("FIX") && (x < f.length))
-        if (f[x].equals("OVERFLY")) { }
-          // TODO: Implement SID
-    }
-  }
 
   /**
    * Parses block text within the GATES tag to create gates.
@@ -195,7 +178,7 @@ class BuildPmdgNav extends BuildDatavase {
    * @param airport   airport object to add fixes to
    */
   private void createFixes(Scanner scanf, Airport airport) {
-    String next = scan.nextLine();
+    String next = scanf.nextLine();
     while (!next.equals(EO+FIXES)) {
       Fix fix = createFix(scanf.nextLine());
       airport.add(fix.ident, fix);
@@ -209,11 +192,23 @@ class BuildPmdgNav extends BuildDatavase {
    * @param s     a line of text (of a fix) to parse
    * @return fix  a new fix based on the string of text
    */
-  private Fix createFix(String s) {
-    if (!s.beginsWith("FIX")) throw new IllegalStateException;
-    String[] split = s.split(" ");
+  private Fix createFix(String ss) {
+    if (!ss.beginsWith("FIX")) throw new IllegalStateException("Invalid Entry in FIX Section");
+    String[] s = ss.split(" ");
     return new Fix(s[1], s[2], s[3], s[4], s[5], s[6], s[7], s[8]);
   }
   
+
+
+  private void createSids(Scanner scanf, HashMap<String, ArrayList<Waypoint>> sids) {
+    String s = scanf.nextLine();
+    while (!s.equals(EO+SIDS)) {
+      // TODO: Split SIDs
+    }
+  }
+
+  private void parseProcedure() {
+    // TODO: Splits and Group Keywords
+  }
 
 }
