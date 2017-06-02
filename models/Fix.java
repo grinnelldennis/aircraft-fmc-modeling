@@ -1,4 +1,4 @@
-class Fix {
+class Fix implements ProceduralFix {  
 
   String ident;
   Coodinate coord;
