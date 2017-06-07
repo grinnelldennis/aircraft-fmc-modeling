@@ -1,17 +1,20 @@
 interface ProceduralFix {
+  
+  final int UNRESTRICTED;
 
+  public proceduralFix(String id);
   /**
    * Creates an "AT OR ABOVE" altitude for the procedural fix
    * @param altitude, a number
    */
-  public boolean addAtOrAboveAltitude(String altitude);
-  public boolean addAtOrAboveAltitude(int altitude);
+  public boolean setAtOrAboveAltitude(String altitude);
+  public boolean setAtOrAboveAltitude(int altitude);
   /**
    * Creates an "AT OR BELOW" altitude for the procedural fix
    * @param altitude, a number
    */
-  public boolean addAtOrBelowAltitude(String altitude);
-  public boolean addAtOrAboveAltitude(int altitude);
+  public boolean setAtOrBelowAltitude(String altitude);
+  public boolean setAtOrAboveAltitude(int altitude);
   /**
    * A catch-all method that creates an altitude restriction for this
    * procedural fix based on `type` and populate fields accordingly.
@@ -19,14 +22,18 @@ interface ProceduralFix {
    *                (`AT`, `ABOVE`, `BELOW`)
    * @param altitude, a string representation of an altitude
    */
-  public boolean addAltitudeRestriction(String type, String altitude);
-  public boolean addAltitudeRestriction(String type, int altitude);
+  public boolean setAltitudeRestriction(String type, String altitude);
+  public boolean setAltitudeRestriction(String type, int altitude);
   /**
    * Creates a speed restriction for the procedural fix
    * @param speed, a number
    */
-  public void addSpeedRestriction(String speed);
-  public void addSpeedRestriction(int speed);
+  public void setSpeedRestriction(String speed);
+  public void setSpeedRestriction(int speed);
+  /**
+   * Set passing restriction true
+   */
+  public void hasRestriction();
   /**
    * Returns whether fix exists a passing restriction
    * @return boolean, restriction status
