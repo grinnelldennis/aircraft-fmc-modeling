@@ -8,8 +8,8 @@ class Airport {
   // (Gate Number, Coordinate)
   HashMap<String, Coordinate> gates;
   // (Procedure Name, List<Waypoints>)
-  HashMap<String, ArrayList<Waypoint>> sids;
-  HashMap<String, ArrayList<Waypoint>> stars;  
+  HashMap<String, InstrumentProcedure> sids;
+  HashMap<String, InstrumentProcedure> stars;  
 
   public Airport(String name, String icao) {
     this.name = name;
