@@ -2,9 +2,10 @@
 
 // cur is tracks current position within arr 
 
-private void parseProcedure(String[] arr, int cur) {
+private void parseProcedure(String[] arr, int cur, 
+                              ArrayList<ProceduralFix> procedure) {
   if (cur >= arr.length)
-    return;
+    return procedure;
 
   ProceduralFix waypoint;
 
@@ -13,15 +14,17 @@ private void parseProcedure(String[] arr, int cur) {
       if (arr[cur+1].equals("OVERFLY")) {
         waypoint = new NavigationFix(arr[cur+2]);
         cur+=2;
+        parseRestrictions(arr, cur, fix);
       } else {
         waypoint = new NavigationFix(arr[cur+1]);
         cur+=1;
       } break;
     case "HDG":
+      //HDG (DEG) UNTIL (ALT)
       waypoint = new VectorFix();
       break;
     case "TRK":
-      //TRK (DEG) UNTIL (ALT)
+      //TRK (DEG) UNTIL (DST) FROM FIX (IDENT)
       //TRK (DEG) INTERCEPT RADIAL (DEG) TO 
       waypoint = new VectorFix();
       break;
@@ -37,13 +40,49 @@ private void parseProcedure(String[] arr, int cur) {
       System.out.println (arr[cur++] + " caught");
       break;
 
+    procedure.add(waypoint);
     parseProcedure(arr, cur+=1);
-
   }
-
 }
 
-// returns cur; increment/consume cur iff parsed
+/**
+ * Parses an array of a individual words, from index of consumed 
+ * vector keywords (TRK/HDG+DEG) as cur, for vectoring instructions;
+ * parses for three specific forms, [unconsumed] 
+ *  (1) UNTIL (ALT)
+ *  (2) UNTIL (DST) FROM FIX (IDENT)
+ *  (3) INTERCEPT RADIAL (DEG) TO FIX (IDENT)
+ * @param arr,  array containing all words from a single instructment procedure
+ * @param cur,  index of first unconsumed word from line
+ * @param fix,  waypoint for which to store the vector restrictions
+ * @return  index of first unconsumed word for procedure after parsing
+ */
+private int parseVector(String[] arr, int cur, VectorFix fix) {
+  switch (arr[cur]) {
+    case "UNTIL":
+      if (arr[cur+1].contains(".")) {// '.' might cause problem
+        fix.addDistanceFrom(fixes.get(arr[cur+4]), arr[cur+1]);
+        cur+=5;
+      } else {
+        fix.addAltitudeRestriction("UNTIL", arr[cur+1]);
+        cur+=2;
+    } case "INTERCEPT":
+      fix.addInterceptRadial(fixes.get(arr[cur+5]), arr[cur+2]);
+      cur+=5;
+      break;
+    default:
+      break;
+  } 
+}
+
+/**
+ * Parses an array of a individual words, from immediately after
+ * a keyword of vector as cur
+ * @param arr,  array containing all words from a single instructment procedure
+ * @param cur,  index of first unconsumed word from line
+ * @param fix,  waypoint for which to store the vector restrictions
+ * @return  index of first unconsumed word for procedure after parsing
+ */
 private int parseRestrictions(String[] arr, int cur, ProceduralFix fix) {
   while (!isKeyword(arr[cur])) {
     switch (arr[cur]) {
