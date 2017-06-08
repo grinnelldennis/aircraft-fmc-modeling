@@ -29,12 +29,14 @@ private void parseProcedure(String[] arr, ArrayList<ProceduralFix> procedure) {
     case "RNW":
       waypoint = new NavigationFix(arr[(wordCounter+=1)++]);
       parseRestrictions(arr, waypoint);
-      break;
+      break;  
     case "HOLD":
       // TODO: Set up Hold
       break;
     case "TURN":
       //TURN (LEFT/RIGHT) DIRECT
+    case "VECTORS":
+      //VECTORS
     default:
       System.out.println (arr[cur++] + " caught");
       break;
@@ -110,7 +112,7 @@ private int parseRestrictions(String[] arr, int cur, ProceduralFix fix) {
   }
 }
 
-private fixKeywords = ["FIX", "HDG", "TRK", "RNW", "HOLD", "TURN"];
+private fixKeywords = ["FIX", "HDG", "TRK", "RNW", "HOLD", "TURN", "VECTORS"];
 
 private boolean isFixKeyword(String word) {
   for (int i = 0; i < fixKeywords.length; i++) 
