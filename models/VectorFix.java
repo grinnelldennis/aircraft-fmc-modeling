@@ -1,6 +1,6 @@
 class VectorFix extends ProceduralFix {
 
-  String ident;     // heading
+  String type;     // HDG or TRK
   int degrees;
 
   Fix toFx;
@@ -8,13 +8,12 @@ class VectorFix extends ProceduralFix {
   int altitudeUntil;
   int interceptRadial;
 
-  private void addDistanceFrom(Fix from, String distance) {
-    this(from, Double.parseDouble(distance));
+  public VectorFix (String type, String degrees) {
+    this(type, Integer.parseInt(degrees));
   }
-  
-  private void addDistanceFrom(Fix from, int distance) {
-    this.fromFix = from;
-    this.distanceUntil = distance;
+  public VectorFix(String type, int degrees) {
+    this.type = type;
+    this.degrees = degrees;
   }
 
   @Override
@@ -27,10 +26,21 @@ class VectorFix extends ProceduralFix {
     altitudeUntil = altitude;
   }
 
-  @Override  private boolean isVector(Aircraft ac) { return true; }
+  @Override  private boolean isVector() { return true; }
+  @Override  private boolean isCleared(Aircraft ac) { 
+    return false; 
+  }
 
-  @Override  private boolean isCleared() { return false; )
+  private boolean isTrack() { return type.equals("TRK"); }
+  private boolean isHeading() { return type.equals("HDG"); }
 
+  private void addDistanceFrom(Fix from, String distance) {
+    this(from, Double.parseDouble(distance));
+  }
+  
+  private void addDistanceFrom(Fix from, int distance) {
+    this.fromFix = from;
+    this.distanceUntil = distance;
   }
 
 }
