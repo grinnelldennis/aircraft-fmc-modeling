@@ -198,17 +198,41 @@ class BuildPmdgNav extends BuildDatavase {
     return new Fix(s[1], s[2], s[3], s[4], s[5], s[6], s[7], s[8]);
   }
   
+  int wordCounter = 0;
 
+  private void createSids(Scanner scanf, Airport airport) {
+    HashMap<String, ArrayList<Waypoint>> sids = new HashMap<>();
+    airport.setSids(parseProcedures("SID", scanf));
+  }
 
-  private void createSids(Scanner scanf, HashMap<String, ArrayList<Waypoint>> sids) {
+  private void createStars(Scanner scanf, Airport airport) {
+    HashMap<String, ArrayList<Waypoint>> sids = new HashMap<>();
+    airport.setSids(parseProcedures("STAR", scanf));
+  }
+
+  /**
+   * 
+   *
+   */
+  private void parseProcedures(String procedureType, Scanner scanf) {
     String s = scanf.nextLine();
-    while (!s.equals(EO+SIDS)) {
-      // TODO: Split SIDs
+    InstrumentProcedure proc = null;
+    while (!s.equals(EO+procedureType)) {
+    //consumes entire line
+      String[] ss = s.split(" ");
+      if (s.beginsWith("SID ")) {
+        proc = new InstrumentProcedure(procedureType, ss[2]);
+        wordCounter++;
+      } else if (proc == null) {
+        throw new IllegalStateException("Procedure is null.");
+      } else if (s.beginsWith(" ")) {
+        //Runways
+        proc.addRunway(ss[1] parseProcedure(ss, proc.runways));
+      } 
     }
   }
 
-  private void parseProcedure() {
-    // TODO: Splits and Group Keywords
-  }
+
+
 
 }
