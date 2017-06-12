@@ -1,28 +1,43 @@
 
 class Performance {
 
+  final int UNDEFINED = -999;
   Aircraft ac;
 
   public Performance (Aircraft ac) {
     this.ac = ac;
   }
 
-  public getDistanceWithMinutes(double minutes) {
-    
+  public double getDistanceWithMinutes(double minutes) {
+    return UNDEFINED;
   }
 
-  public getTopOfClimb() {}
+  public double getTopOfClimb() {
+    return UNDEFINED;
+  }
 
-  public getTopOfDescend(int top, int bottom, int glideSlope) { return (top - bottom) / glideSlope; }
+  public double getTopOfDescend(int top, int bottom, int glideSlope) { 
+    return (top - bottom) / glideSlope; 
+  }
 
-  public getRateOfDescend(int groundSpeed) { return groundSpeed * 5; };
+  public int getRateOfDescend(int groundSpeed) { 
+    return groundSpeed * 5; 
+  }
 
-  public getRateOfDescend(int tas, int top, int bottom, int distance) { 
-    return (tas * (top - bottom))/ distance; 
+  public int getRateOfDescend(int tas, int top, int bottom, int distance) { 
+    return (int) (tas * (top - bottom))/ distance; 
   }
   
-  public getDescendPoint() {}
+  public int getDescendPoint() {
+    return UNDEFINED;
+  }
 
-  public getVref () {}
+  public int getVreference() {
+    return UNDEFINED;
+  }
+  
+  public int getVApproach() {
+    return UNDEFINED;
+  }
 
 }

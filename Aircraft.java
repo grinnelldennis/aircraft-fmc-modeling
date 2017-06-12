@@ -1,3 +1,6 @@
+import java.io.File;
+import java.util.HashMap;
+
 // Import statements
 
 // Stores all static data for the aircraft
@@ -5,10 +8,10 @@
 class Aircraft {
   
   public Aircraft (String type) {
-    File file = new Flie (type);
+    File file = new File (type);
 
     // use hashmap to store all attributes
-    HashMap aircraft = new HashMap(); 
+    HashMap aircraft = new HashMap<>(); 
 
 
   }

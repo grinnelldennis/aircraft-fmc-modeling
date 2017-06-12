@@ -1,13 +1,15 @@
+
+
+import java.util.ArrayList;
+import java.util.HashMap;
+
 class Airport {
   
   String icao;
   String name;
   ArrayList<Runway> runways;
-  // (Ident Name, Fix)
   HashMap<String, Fix> fixes;
-  // (Gate Number, Coordinate)
   HashMap<String, Coordinate> gates;
-  // (Procedure Name, List<Waypoints>)
   HashMap<String, InstrumentProcedure> sids;
   HashMap<String, InstrumentProcedure> stars;  
 
@@ -21,20 +23,20 @@ class Airport {
   }
 
   public void add(String fixId, Fix fix) {
-    if (fix==null) throw IllegalArgumentException("Fix is null.");
-    fixes.set(fixId, fix);
+    if (fix==null) throw new IllegalArgumentException("Fix is null.");
+    fixes.put(fixId, fix);
   }
 
   public void add(String gateId, Coordinate coordinate) {
-    if (coordinate==null) throw IllegalArgumentException("Coordinate is null.");
-    gates.set(gateId, coodinate);
+    if (coordinate==null) throw new IllegalArgumentException("Coordinate is null.");
+    gates.put(gateId, coordinate);
   }
 
   public void add(Runway runway) {
-    if (runway==null) throw IllegalArgumentException("Runway is null.");
+    if (runway==null) throw new IllegalArgumentException("Runway is null.");
     runways.add(runway);
   }
 
-  public void addSid(String id, ArrayList<Waypoint> sid) { sids.set(id, sid); }
-  public void addStar(String id, ArrayList<Waypoint> star) { stars.set(id, star); }
+  public void addSid(String id, InstrumentProcedure sid) { sids.put(id, sid); }
+  public void addStar(String id, InstrumentProcedure star) { stars.put(id, star); }
 }

@@ -1,3 +1,6 @@
+import java.util.ArrayList;
+import java.util.HashMap;
+
 /*
   Represents a single SID/STAR procedure
 */
@@ -5,28 +8,39 @@ class InstrumentProcedure {
 
   String ident;   //Procedure Name
   String type;    //SID/STAR
-  ArrayList<Waypoints> procedure;   //Procedure specific procedures
-  HashMap<String, ArrayList<Waypoints>> runways;  
-  HashMap<String, ArrayList<Waypoints>> transitions;
+  ArrayList<ProceduralFix> baseProcedure;   
+  HashMap<String, ArrayList<ProceduralFix>> runwayProcedures;  
+  HashMap<String, ArrayList<ProceduralFix>> transitions;
 
-  public Procedure(String ident, String type) {
+  public InstrumentProcedure(String ident, String type) {
     this.ident = ident; 
     this.type = type;
-    procedure = new ArrayList<>();
-    options = new HashMap<>();
+    baseProcedure = new ArrayList<>();
+    runwayProcedures = new HashMap<>();
     transitions = new HashMap<>();
   }
 
-  public void setProcedure(String id, ArrayList<Waypoints> procedure) {
-    this.procedure.put(id, procedure);
+  public void setBaseProcedure(ArrayList<ProceduralFix> proc) { 
+    this.baseProcedure = proc; 
+  }
+  
+  public void addBaseProcedureFix(ProceduralFix fixProc) {
+    this.baseProcedure.add(fixProc);
+  }
+  
+  public void setProcedure(String type, String id, ArrayList<ProceduralFix> proc) {
+	  if (type.equals("Transition")) 
+	    addTransition(id, proc);
+	  else if (type.equals("Runway"))
+	    addRunwayProcedure(id, proc);
   }
 
-  public void addRunway(String id, HashMap<String, ArrayList<Waypoints>> runway) {
-    runways.put(id, runway);
+  public void addRunwayProcedure(String id, ArrayList<ProceduralFix> runwayProc) {
+    this.runwayProcedures.put(id, runwayProc);
   }
 
-  public void addTransition(String id, HashMap<String, ArrayList<Waypoints>> transition) {
-    transitions.put(id, transition);
+  public void addTransition(String id, ArrayList<ProceduralFix> transition) {
+    this.transitions.put(id, transition);
   }
 
 }

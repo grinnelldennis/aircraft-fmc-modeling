@@ -7,11 +7,11 @@ class Navaid {
   char designator;  
 
 
-  public Navaid (String i, String n, String t, double f, double lat, double lon) {
+  public Navaid (String i, String b, String t, double f, double lat, double lon) {
     this.fix = new Fix(i, lat, lon); 
-    this.name = n; 
+    this.brief = b; 
     this.type = t;
-    this.f = freq; 
+    this.freq = freq; 
   }
 
   public Navaid (Fix fix, String b, String t, double f, char d) {

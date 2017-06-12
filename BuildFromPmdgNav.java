@@ -1,19 +1,25 @@
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Scanner;
+
 /* Import Statements Goes Here */
 
-class BuildPmdgNav extends BuildDatavase {
+class BuildPmdgNav extends NavigationDatabase {
   final String PATH = "../aircraft-data/NavPmdg";
   final int NAV_LINE_LENGTH = 61;
   final int APT_LINE_LENGTH = 74;
   // Data Storage
   HashMap<String, Airport> airports;
-  HashMap<String, ArrayList<Navaid>> navaids;
+  HashMap<String, ArrayList<Navaid>> navaids; //Navaids could have same names
 
-  public BuildPmdgNav() {
+  public BuildPmdgNav() throws FileNotFoundException {
     airports = new HashMap<>();
     navaids = new HashMap<>();
     buildNavDatabase();
   }
-  public void buildNavDatabase() {
+  public void buildNavDatabase() throws FileNotFoundException {
     loadNavaids(new File(PATH+"/NAVDATA/wpNavAID.txt")); 
     loadAirports(new File(PATH+"/NAVDATA/wpNavAPT.txt"));
   }
@@ -22,31 +28,33 @@ class BuildPmdgNav extends BuildDatavase {
    * Driver that iterates the entire wpNavAID file, calls addLineToNavaids with
    * individual lines within the text file
    * @param f     file containing all navaids
+   * @throws FileNotFoundException 
    * @see addLineToNavaids
-  */
-  private void loadNavaids(File f) {
+   */
+  private void loadNavaids(File f) throws FileNotFoundException {
     Scanner scanf = new Scanner(f);
     while (scanf.hasNext())
       addLineToNavaids(scanf.nextLine());
   }
 
   private void addLineToNavaids(String s) {
-    if (s.beginsWith(";")) break;
-    if (s.length!=61) 
+    if (s.startsWith(";")) break;
+    if (s.length()!=61) 
       throw new IllegalStateException("Invalid Navaid Entry");
 
+    // Decompose each line in Navaid file
     String brief = s.substring(0, 24); // 24 characters-long
     String ident = s.substring(24, 29); // 5 characters-long
     String type = s.substring(29, 33); // 4 characters-long
-    double lat = s.substring(33, 43); // 10 characters-long
-    double lon =  s.substring(43, 54); // 11 characters-long
-    double freq = s.substring(54, 60); // 6 characters-long
+    double lat = Double.parseDouble(s.substring(33, 43)); // 10 characters-long
+    double lon =  Double.parseDouble(s.substring(43, 54)); // 11 characters-long
+    double freq = Double.parseDouble(s.substring(54, 60)); // 6 characters-long
     char desig = s.charAt(60); // 1 characters-long
     Navaid nav = new Navaid(new Fix(ident, lat, lon), brief, type, freq, desig);
 
-    if (!navaids.contains(ident)) 
-      navaids.set(ident, (new Arraylist<Navaid>()).add(nav));
-    navaids.set(ident, navaids.get(ident).add(nav));
+    if (!navaids.containsKey(ident)) 
+      navaids.put(ident, new ArrayList<Navaid>().add(nav));
+    navaids.put(ident, nav.get(ident).add(nav));
   }
 
   /**
@@ -56,9 +64,9 @@ class BuildPmdgNav extends BuildDatavase {
    * @param index       substring's starting index
    * @param characters  the number of characters after index to substring
    * @return  the requested String 
-  */  
+   */  
   private String extractSubstring(String s, int index, int characters) {
-    if (s.length > index+characters) throw new ArrayIndexOutOfBoundException("Index Out of Bound");
+    if (s.length() > index+characters) throw new ArrayIndexOutOfBoundsException("Index Out of Bound");
     return s.substring(index, index+characters+1);
   }
 
@@ -66,9 +74,10 @@ class BuildPmdgNav extends BuildDatavase {
    * Driver that iterates the entire wpNavAPT file, calls addLineToAriports with
    * individual lines within the text file
    * @param f     file containing all airports
+   * @throws FileNotFoundException 
    * @see addLineTiAirport
-  */
-  private void loadAirports(File f) {
+   */
+  private void loadAirports(File f) throws FileNotFoundException {
     Scanner scanf = new Scanner(f);
     while (scanf.hasNext())
       addAirport(scanf.nextLine());
@@ -82,22 +91,22 @@ class BuildPmdgNav extends BuildDatavase {
    * @param s   text from airports database, contains one runway info for airport
    */
   private void addAirport(String s) {
-    if (s.beginsWith(";"))  break;
-    if (s.length != APT_LINE_LENGTH) // Add Logging Option
+    if (s.startsWith(";"))  break;
+    if (s.length() != APT_LINE_LENGTH) // Add Logging Option
       throw new IllegalStateException("Invalid Airport Entry");
     String icao = s.substring(24, 28); // 4 charactesr-long
-    ArrayList<Runway> runways = null;
+    ArrayList<Fix> runways = null;
 
-    if (!airports.contains(icao)) { 
+    if (!airports.containsKey(icao)) { 
       String name = s.substring(0, 24);
       Airport newAirport = new Airport(name, icao);
       // Check if Airport Has SID/STAR Procedures
       File file = new File(PATH+"/SIDSTARS/"+icao+".txt");
       if (file != null) 
         parseAirportFile(newAirport, file);
-      airports.set(icao, newAirport);      
+      airports.put(icao, newAirport);      
     }
-    airports.set(icao, airports.get(icao).add(createRunway(s)));
+    airports.put(icao, airports.get(icao).add(createRunway(s)));
   }
 
   private Runway createRunway(String s) {
@@ -121,27 +130,27 @@ class BuildPmdgNav extends BuildDatavase {
 
     while (scanf.hasNext()) {
       switch (scanf.nextLine()) {
-        case COMMENT:
-          break;
-        case "\n":
-          break;
-        case FIXES:
-          createFixes(scanf, airport);
-          break;
-        case RUNWAYS:
-          break;
-        case SIDS:
-          createeSids(scanf, airport);
-          break;
-        case STARS:
-          createStars(scanf, airport);
-          break;
-        case APPROACHES:
-          createApproaches(scanf, airport);
-          break;
-        case GATES:
-          createGates(scanf, gates);
-          break;
+      case COMMENT:
+        break;
+      case "\n":
+        break;
+      case FIXES:
+        createFixes(scanf, airport);
+        break;
+      case RUNWAYS:
+        break;
+      case SIDS:
+        createSids(scanf, airport);
+        break;
+      case STARS:
+        createStars(scanf, airport);
+        break;
+      case APPROACHES:
+        createApproaches(scanf, airport);
+        break;
+      case GATES:
+        createGates(scanf, gates);
+        break;
       }
     }
   }
@@ -193,46 +202,176 @@ class BuildPmdgNav extends BuildDatavase {
    * @return fix  a new fix based on the string of text
    */
   private Fix createFix(String ss) {
-    if (!ss.beginsWith("FIX")) throw new IllegalStateException("Invalid Entry in FIX Section");
+    if (!ss.startsWith("FIX")) throw new IllegalStateException("Invalid Entry in FIX Section");
     String[] s = ss.split(" ");
-    return new Fix(s[1], s[2], s[3], s[4], s[5], s[6], s[7], s[8]);
+    return new Fix(s[1], s[3], s[4], s[5], s[6], s[7], s[8]);
   }
-  
+
   int wordCounter = 0;
 
   private void createSids(Scanner scanf, Airport airport) {
-    HashMap<String, ArrayList<Waypoint>> sids = new HashMap<>();
+    HashMap<String, ArrayList<ProceduralFix>> sids = new HashMap<>();
     airport.setSids(parseProcedures("SID", scanf));
   }
 
   private void createStars(Scanner scanf, Airport airport) {
-    HashMap<String, ArrayList<Waypoint>> sids = new HashMap<>();
+    HashMap<String, ArrayList<ProceduralFix>> sids = new HashMap<>();
     airport.setSids(parseProcedures("STAR", scanf));
   }
 
   /**
-   * 
+   * Parses an entire block of SID or STAR procedure
    *
    */
   private void parseProcedures(String procedureType, Scanner scanf) {
     String s = scanf.nextLine();
     InstrumentProcedure proc = null;
     while (!s.equals(EO+procedureType)) {
-    //consumes entire line
+      //consumes entire line
       String[] ss = s.split(" ");
-      if (s.beginsWith("SID ")) {
+      if (s.startsWith(procedureType+" ")) {
         proc = new InstrumentProcedure(procedureType, ss[2]);
         wordCounter++;
       } else if (proc == null) {
         throw new IllegalStateException("Procedure is null.");
-      } else if (s.beginsWith(" ")) {
-        //Runways
-        proc.addRunway(ss[1] parseProcedure(ss, proc.runways));
+      } else if (s.startsWith(" ")) {
+        //runway-specific Procedure
+        proc.add(ss[1], parseProcedure(ss, proc.runways));
       } 
     }
   }
 
 
+  /* ------------From ParsingRestrictions.java------------ */
+  
+  int wordCount = 0;
+  
+  /**
+   * Scans for keywords for new procedural fixes. Recurses until wordCounter is out of bound
+   * @param arr,  array of all word fragments from a single procedure
+   * @param procedure,  a list of all instrument procedures of this type
+   */
+  private ArrayList<ProceduralFix> parseProcedure(String[] arr, ArrayList<ProceduralFix> waypoints) {
+    if (wordCounter >= arr.length)
+      return waypoints;
+
+    ProceduralFix waypoint;
+
+    switch(arr[wordCounter]) {
+    case "FIX":
+      if (arr[wordCounter+1].equals("OVERFLY")) {
+        waypoint = new NavigationFix(arr[(wordCount+=2)++]);
+        parseRestrictions(arr, waypoint);
+      } else {
+        waypoint = new NavigationFix(arr[(wordCount+=1)++]);
+        parseRestrictions(arr, waypoint);
+      } break;
+    case "HDG":
+      waypoint = new VectorFix("HDG", arr[(wordCount+=1)++]);
+      parseVector(arr, waypoint);
+      break;
+    case "TRK":
+      waypoint = new VectorFix("TRK", arr[(wordCount+=1)++]);
+      parseVector(arr, waypoint);
+      break;
+    case "RNW":
+      waypoint = new NavigationFix(arr[(wordCount+=1)++]);
+      parseRestrictions(arr, waypoint);
+      break;  
+    case "HOLD":
+      // TODO: Set up Hold
+      break;
+    case "TURN":
+      //TURN (LEFT/RIGHT) DIRECT
+    case "VECTORS":
+      //VECTORS
+    default:
+      System.out.println (arr[wordCounter++] + " caught");
+      break;
+
+      waypoints.add(waypoint);
+      parseProcedure(arr, wordCounter+=1);
+    }
+  }
+
+  /**
+   * Parses an array of a individual words, from index of consumed 
+   * vector keywords (TRK/HDG+DEG) as wordCounter, for vectoring instructions;
+   * parses for three specific forms, [unconsumed] 
+   *  (1) UNTIL (ALT)
+   *  (2) UNTIL (DST) FROM FIX (IDENT)
+   *  (3) INTERCEPT RADIAL (DEG) TO FIX (IDENT)
+   * @param arr,  array containing all words from a single instrument procedure
+   * @param fix,  waypoint for which to store the vector restrictions
+   * @return  index of first un-consumed word for procedure after parsing
+   */
+  private int parseVector(String[] arr, VectorFix fix) {
+    switch (arr[wordCounter]) {
+    case "UNTIL":
+      if (arr[wordCounter++1].contains(".")) {// '.' might cause problem
+        fix.addDistanceFrom(fixes.get(arr[wordCounter+=4]), arr[wordCounter-3]);
+      } else {
+        fix.addAltitudeRestriction("UNTIL", arr[wordCounter+=1]);
+      } case "INTERCEPT":
+        fix.addInterceptRadial(fixes.get(arr[wordCounter+=5]), arr[wordCounter-4]);
+        break;
+      default:
+        break;
+        wordCounter++;
+    } 
+  }
+
+  /**
+   * Parses an array of a individual words, from immediately after
+   * a keyword of vector as wordCounter, parses for 
+   *  (1) AT OR ABOVE (ALT)
+   *  (2) AT OR BELOW (ALT)
+   *  (3) SPEED (SPD)
+   *  (4) (ALT)
+   * @param arr,  array containing all words from a single instructment procedure
+   * @param fix,  waypoint for which to store the vector restrictions
+   * @return  index of first unconsumed word for procedure after parsing
+   */
+  private int parseRestrictions(String[] arr, ProceduralFix fix) {
+    while (!isFixKeyword(arr[wordCounter])) {
+      switch (arr[wordCounter]) {
+      case "AT":
+        switch (arr[wordCounter+2]) {
+        case "ABOVE":
+        case "BELOW":
+          fix.setAltitudeRestriction(arr[wordCounter+=2], convertToInt(arr[wordCounter+=1]));
+          break;
+        } break;
+      case "SPEED": 
+        fix.setSpeedRestriction(convertToInt(arr[wordCounter+=1]));
+        break;
+      default:
+        int altitude = Integer.parseInt(arr[wordCounter]);
+        if (altitude > 0)
+          fix.setAltitudeRestriction("AT", altitude);
+        break;
+      }
+      wordCounter++;
+    }
+    return wordCounter;
+  }
+
+  private String[] fixKeywords = {"FIX", "HDG", "TRK", "RNW", "HOLD", "TURN", "VECTORS"};
+
+  private boolean isFixKeyword(String word) {
+    for (String keyword : fixKeywords)
+      if (word.equalsIgnoreCase(keyword)) 
+        return true;
+    return false;
+  }
+  
+  private double convertToDouble(String s) {
+    return Double.parseDouble(s);
+  }
+  
+  private int convertToInt(String s) {
+    return Integer.parseInt(s);
+  }
 
 
 }

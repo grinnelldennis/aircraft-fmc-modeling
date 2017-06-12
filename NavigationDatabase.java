@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+import java.util.HashMap;
 
 // Read nav and airport informations into respective hashmaps within the program
 class NavigationDatabase {
@@ -7,23 +9,23 @@ class NavigationDatabase {
   HashMap<String, ArrayList<Navaid>> navaids;
 
   public NavigationDatabase () {
-    BuildDatabase build = new BuildDatabase();
+    
   }
 
 
   // Export entries associated with ident
   public ArrayList<Navaid> getNavaid(String ident) {
-    if (navaids.contains(ident))
+    if (navaids.containsKey(ident))
       return navaids.get(ident);
     else  return null;
   }
   public Airport getAirport(String icao) {
-    if (airports.contains(icao))
-      return airport.get(icao);
+    if (airports.containsKey(icao))
+      return airports.get(icao);
     else  return null;
   }
 
-  public HashMap<String, Navaid> getNavaids() { return navaids; }
+  public HashMap<String, ArrayList<Navaid>> getNavaids() { return navaids; }
   public HashMap<String, Airport> getAirports() { return airports; }
 
 }

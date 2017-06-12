@@ -29,6 +29,7 @@ Retreives and parses data from AIRAC files;
 Stores,
 - Airport SID/STAR & Runway Informations
 - Enroute NAVAIDs
+- NAV Cycle Information
 Calculates,
 - Distance between two points
 - Static TOC
@@ -49,7 +50,7 @@ Stores dynamic states & parameters of the aircraft. Contains:
 - Time
 - Weight
 - Fuel
-
+- OAT
 
 
 ### Dispatch.java
