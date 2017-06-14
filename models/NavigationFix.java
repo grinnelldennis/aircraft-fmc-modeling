@@ -1,10 +1,11 @@
-class NavFix implements ProceduralFix {
+class NavigationFix implements ProceduralFix {
   
   String ident;     // heading
   Coordinate coord;
   
-  public NavFix() {
-    
+  public NavigationFix(String name, Coordinate coord) {
+    this.ident = name;
+    this.coord = coord;
   }
   
   @Override

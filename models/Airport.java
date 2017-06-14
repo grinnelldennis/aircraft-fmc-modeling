@@ -1,5 +1,3 @@
-
-
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -36,7 +34,8 @@ class Airport {
     if (runway==null) throw new IllegalArgumentException("Runway is null.");
     runways.add(runway);
   }
-
+  
   public void addSid(String id, InstrumentProcedure sid) { sids.put(id, sid); }
   public void addStar(String id, InstrumentProcedure star) { stars.put(id, star); }
+  
 }

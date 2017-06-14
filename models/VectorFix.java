@@ -39,6 +39,11 @@ class VectorFix implements ProceduralFix {
     this.toFix = from;
     this.distanceUntil = distance;
   }
+  
+  public void addInterceptRadial(Fix from, int distance) {
+    this.toFix = from;
+    this.interceptRadial = distance;
+  }
 
   @Override public boolean isVector() { return true; }
   @Override public boolean isCleared(Aircraft ac) { 
