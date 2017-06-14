@@ -7,19 +7,18 @@ import java.util.Scanner;
 /* Import Statements Goes Here */
 
 class BuildPmdgNav extends NavigationDatabase {
+  
   final String PATH = "../aircraft-data/NavPmdg";
   final int NAV_LINE_LENGTH = 61;
   final int APT_LINE_LENGTH = 74;
-  // Data Storage
+  
   HashMap<String, Airport> airports;
-  HashMap<String, ArrayList<Navaid>> navaids; //Navaids could have same names
+  HashMap<String, ArrayList<Navaid>> navaids;
 
   public BuildPmdgNav() throws FileNotFoundException {
     airports = new HashMap<>();
     navaids = new HashMap<>();
-    buildNavDatabase();
-  }
-  public void buildNavDatabase() throws FileNotFoundException {
+
     loadNavaids(new File(PATH+"/NAVDATA/wpNavAID.txt")); 
     loadAirports(new File(PATH+"/NAVDATA/wpNavAPT.txt"));
   }
@@ -38,8 +37,8 @@ class BuildPmdgNav extends NavigationDatabase {
   }
 
   private void addLineToNavaids(String s) {
-    if (s.startsWith(";")) break;
-    if (s.length()!=61) 
+    if (s.startsWith(";")) return;
+    if (s.length() != 61) 
       throw new IllegalStateException("Invalid Navaid Entry");
 
     // Decompose each line in Navaid file
@@ -50,11 +49,13 @@ class BuildPmdgNav extends NavigationDatabase {
     double lon =  Double.parseDouble(s.substring(43, 54)); // 11 characters-long
     double freq = Double.parseDouble(s.substring(54, 60)); // 6 characters-long
     char desig = s.charAt(60); // 1 characters-long
+    
     Navaid nav = new Navaid(new Fix(ident, lat, lon), brief, type, freq, desig);
-
     if (!navaids.containsKey(ident)) 
-      navaids.put(ident, new ArrayList<Navaid>().add(nav));
-    navaids.put(ident, nav.get(ident).add(nav));
+      navaids.put(ident, new ArrayList<Navaid>());
+    ArrayList<Navaid> updateNav = navaids.get(ident);
+    updateNav.add(nav);
+    navaids.put(ident, updateNav);
   }
 
   /**
@@ -89,9 +90,10 @@ class BuildPmdgNav extends NavigationDatabase {
    * (airport icao) does not already exist in hashtable; otherwise adds the runway
    * to the hashtable. 
    * @param s   text from airports database, contains one runway info for airport
+   * @throws FileNotFoundException 
    */
-  private void addAirport(String s) {
-    if (s.startsWith(";"))  break;
+  private void addAirport(String s) throws FileNotFoundException {
+    if (s.startsWith(";"))  return;
     if (s.length() != APT_LINE_LENGTH) // Add Logging Option
       throw new IllegalStateException("Invalid Airport Entry");
     String icao = s.substring(24, 28); // 4 charactesr-long
@@ -106,7 +108,9 @@ class BuildPmdgNav extends NavigationDatabase {
         parseAirportFile(newAirport, file);
       airports.put(icao, newAirport);      
     }
-    airports.put(icao, airports.get(icao).add(createRunway(s)));
+    Airport updateAirport = airports.get(icao);
+    updateAirport.add(createRunway(s));
+    airports.put(icao, updateAirport);
   }
 
   private Runway createRunway(String s) {
@@ -124,8 +128,9 @@ class BuildPmdgNav extends NavigationDatabase {
    * Parses an entire file specific to a single airport containing SID/STARs.
    * @param airport   Airport the procedures will be stored in
    * @param file      The entire SIDSTAR file to read from
+   * @throws FileNotFoundException 
    */
-  private void parseAirportFile(Airport airport, File file) {
+  private void parseAirportFile(Airport airport, File file) throws FileNotFoundException {
     Scanner scanf = new Scanner(file);
 
     while (scanf.hasNext()) {
@@ -149,7 +154,7 @@ class BuildPmdgNav extends NavigationDatabase {
         createApproaches(scanf, airport);
         break;
       case GATES:
-        createGates(scanf, gates);
+        createGates(scanf, airport);
         break;
       }
     }
@@ -165,6 +170,10 @@ class BuildPmdgNav extends NavigationDatabase {
   final String COMMENT = ";";
   final String EO = "END";  // 'End Of'
 
+  private void createApproaches(Scanner scanf, Airport airport) {
+    
+  }
+  
   /**
    * Parses block text within the GATES tag to create gates.
    * @param scanf     file reader at the beginning of GATES tag
@@ -211,12 +220,12 @@ class BuildPmdgNav extends NavigationDatabase {
 
   private void createSids(Scanner scanf, Airport airport) {
     HashMap<String, ArrayList<ProceduralFix>> sids = new HashMap<>();
-    airport.setSids(parseProcedures("SID", scanf));
+    parseProcedures("SID", scanf);
   }
 
   private void createStars(Scanner scanf, Airport airport) {
     HashMap<String, ArrayList<ProceduralFix>> sids = new HashMap<>();
-    airport.setSids(parseProcedures("STAR", scanf));
+    parseProcedures("STAR", scanf);
   }
 
   /**
@@ -235,15 +244,18 @@ class BuildPmdgNav extends NavigationDatabase {
       } else if (proc == null) {
         throw new IllegalStateException("Procedure is null.");
       } else if (s.startsWith(" ")) {
-        //runway-specific Procedure
-        proc.add(ss[1], parseProcedure(ss, proc.runways));
-      } 
+        proc.addRunwayProcedure(ss[1], parseProcedure(ss, new ArrayList<ProceduralFix>()));
+      } else if (s.startsWith("  ")) {
+        proc.addTransition(ss[2], parseProcedure(ss, new ArrayList<ProceduralFix>()));
+      }
+      
     }
   }
 
 
   /* ------------From ParsingRestrictions.java------------ */
   
+  String icao;
   int wordCount = 0;
   
   /**
@@ -255,27 +267,31 @@ class BuildPmdgNav extends NavigationDatabase {
     if (wordCounter >= arr.length)
       return waypoints;
 
-    ProceduralFix waypoint;
+    ProceduralFix waypoint = null;
+    String fixIdent;
 
     switch(arr[wordCounter]) {
     case "FIX":
       if (arr[wordCounter+1].equals("OVERFLY")) {
-        waypoint = new NavigationFix(arr[(wordCount+=2)++]);
+        fixIdent = arr[wordCount+=2];
+        waypoint = new NavigationFix(fixIdent, getFix(fixIdent).coord);
         parseRestrictions(arr, waypoint);
       } else {
-        waypoint = new NavigationFix(arr[(wordCount+=1)++]);
+        fixIdent = arr[wordCount+=1];
+        waypoint = new NavigationFix(fixIdent, getFix(fixIdent).coord);
         parseRestrictions(arr, waypoint);
       } break;
     case "HDG":
-      waypoint = new VectorFix("HDG", arr[(wordCount+=1)++]);
-      parseVector(arr, waypoint);
+      waypoint = new VectorFix("HDG", arr[wordCount+=1]);
+      parseVector(arr, (VectorFix) waypoint);
       break;
     case "TRK":
-      waypoint = new VectorFix("TRK", arr[(wordCount+=1)++]);
-      parseVector(arr, waypoint);
+      waypoint = new VectorFix("TRK", arr[wordCount+=1]);
+      parseVector(arr, (VectorFix) waypoint);
       break;
     case "RNW":
-      waypoint = new NavigationFix(arr[(wordCount+=1)++]);
+      fixIdent = arr[wordCount+=1];
+      waypoint = new NavigationFix(fixIdent, getFix(fixIdent).coord);;
       parseRestrictions(arr, waypoint);
       break;  
     case "HOLD":
@@ -288,11 +304,11 @@ class BuildPmdgNav extends NavigationDatabase {
     default:
       System.out.println (arr[wordCounter++] + " caught");
       break;
-
-      waypoints.add(waypoint);
-      parseProcedure(arr, wordCounter+=1);
     }
+    waypoints.add(waypoint);
+    return parseProcedure(arr, waypoints);
   }
+  
 
   /**
    * Parses an array of a individual words, from index of consumed 
@@ -305,20 +321,21 @@ class BuildPmdgNav extends NavigationDatabase {
    * @param fix,  waypoint for which to store the vector restrictions
    * @return  index of first un-consumed word for procedure after parsing
    */
-  private int parseVector(String[] arr, VectorFix fix) {
+  private void parseVector(String[] arr, VectorFix waypoint) {
     switch (arr[wordCounter]) {
     case "UNTIL":
-      if (arr[wordCounter++1].contains(".")) {// '.' might cause problem
-        fix.addDistanceFrom(fixes.get(arr[wordCounter+=4]), arr[wordCounter-3]);
+      if (arr[wordCounter++].contains(".")) {// '.' might cause problem
+        
+        waypoint.addDistanceFrom(getFix(arr[wordCounter+=4]), arr[wordCounter-3]);
       } else {
-        fix.addAltitudeRestriction("UNTIL", arr[wordCounter+=1]);
+        waypoint.setAltitudeRestriction("UNTIL", convertToInt(arr[wordCounter+=1]));
       } case "INTERCEPT":
-        fix.addInterceptRadial(fixes.get(arr[wordCounter+=5]), arr[wordCounter-4]);
+        waypoint.addInterceptRadial(getFix(arr[wordCounter+=5]), Integer.parseInt(arr[wordCounter-4]));
         break;
       default:
         break;
-        wordCounter++;
     } 
+    wordCounter++;
   }
 
   /**
@@ -356,6 +373,15 @@ class BuildPmdgNav extends NavigationDatabase {
     return wordCounter;
   }
 
+  
+  /* ------------ Helpers ------------ */
+  private double convertToDouble(String s) {
+    return Double.parseDouble(s);
+  }
+  private int convertToInt(String s) {
+    return Integer.parseInt(s);
+  }
+
   private String[] fixKeywords = {"FIX", "HDG", "TRK", "RNW", "HOLD", "TURN", "VECTORS"};
 
   private boolean isFixKeyword(String word) {
@@ -365,13 +391,11 @@ class BuildPmdgNav extends NavigationDatabase {
     return false;
   }
   
-  private double convertToDouble(String s) {
-    return Double.parseDouble(s);
+  private Fix getFix(String ident) {
+    if (airports.containsKey(icao)) 
+      if (airports.get(icao).fixes.containsKey(ident))
+        return airports.get(icao).fixes.get(ident);
+    return null;
   }
-  
-  private int convertToInt(String s) {
-    return Integer.parseInt(s);
-  }
-
 
 }
